@@ -1,7 +1,32 @@
 {
-  "dependencies": {
-    "axios": "^0.26.1",
-    "fs": "^0.0.1-security",
-    "objects-to-csv": "^1.3.6"
-  }
+    "dependencies": {
+        "axios": "^0.26.1",
+        "fs": "^0.0.1-security",
+        "objects-to-csv": "^1.3.6"
+    },
+    "name": "edenred-transactions",
+    "description": "Node.js module to retrieve transactions from a Edenred card.",
+    "version": "1.0.0",
+    "main": "app.js",
+    "devDependencies": {},
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/josecoelhomelo/edenred-transactions.git"
+    },
+    "keywords": [
+        "edenred",
+        "card",
+        "retrieve",
+        "fetch",
+        "transactions"
+    ],
+    "author": "José Melo",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/josecoelhomelo/edenred-transactions/issues"
+    },
+    "homepage": "https://github.com/josecoelhomelo/edenred-transactions#readme"
 }
