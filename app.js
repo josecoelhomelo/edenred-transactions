@@ -1,7 +1,6 @@
 const fs = require('node:fs');
 const ObjectsToCsv = require('objects-to-csv');
 const axios = require('axios');
-let transactions = [];
 
 const fetchData = (api, email, password) => new Promise((resolve, reject) => {
     if (!api || !email || !password) { return reject('Host and credentials required'); }
@@ -10,12 +9,12 @@ const fetchData = (api, email, password) => new Promise((resolve, reject) => {
     axios.post(`${api}/edenred-customer/api/authenticate/default?appVersion=1.0&appType=PORTAL&channel=WEB`, {
             userId: email,
             password: password,
-        },
-        {            
+        }, {            
             headers: {
-                'Content-Type': 'application/json',
+                'content-type': 'application/json'
             }
         })
+        .catch(err => reject('Login failed'))
         .then(res => {  
             cookie = res.headers['set-cookie'];
             token = res.data.data.token;
@@ -27,7 +26,7 @@ const fetchData = (api, email, password) => new Promise((resolve, reject) => {
                 }
             })
         })
-        .catch(err => reject('Login failed'))
+        .catch(err => reject('Failed to retrieve ID'))
         .then(res => {
             return axios.get(`${api}/edenred-customer/api/protected/card/${res.data.data[0].id}/accountmovement?appVersion=1.0&appType=PORTAL&channel=WEB`, {
                 headers: {
@@ -36,24 +35,16 @@ const fetchData = (api, email, password) => new Promise((resolve, reject) => {
                 }
             })
         })
-        .catch(err => reject('Failed to retrieve ID'))
-        .then(res => {
-            res.data.data.movementList.forEach(item => {
-                transactions.push({
-                    date: item.transactionDate,
-                    description: item.transactionName,      
-                    amount: item.amount
-                });
-            });
-            resolve(transactions);
-        })
-        .catch(err => reject('Failed to retrieve transactions'));
+        .catch(err => reject('Failed to retrieve transactions'))
+        .then(res => resolve(res.data.data.movementList));
 });
+
 const getTransactions = (api, email, password) => new Promise((resolve, reject) => {
     fetchData(api, email, password)
         .then(res => resolve(res))
         .catch(err => reject(err));
 });
+
 const exportTransactions = (api, email, password) => new Promise((resolve, reject) => {
     fetchData(api, email, password)
         .then(async object => { 
@@ -68,6 +59,7 @@ const exportTransactions = (api, email, password) => new Promise((resolve, rejec
         })
         .catch(err => reject(err));
 });
+
 module.exports = {
     getTransactions,
     exportTransactions
