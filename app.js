@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require('node:fs');
 const ObjectsToCsv = require('objects-to-csv');
 const axios = require('axios');
 let transactions = [];
