@@ -1,4 +1,4 @@
-Node.js module to retrieve transactions from a Edenred card. 
+Node.js module to retrieve transactions from an Edenred card. 
 <p><sup>Only tested with the Portuguese host/version (https://www.myedenred.pt).</sup></p>
 
 # Installation
