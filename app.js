@@ -71,7 +71,7 @@ const getCardId = async () => {
 * @throws {Error} - If login is required or if there is an error retrieving the transactions
 */
 const getTransactions = async (cardId = null) => {
-    if (!cookie || !token) { throw new Error('Login required'); }
+    if (!cookie || !token) { throw Error('Login required'); }
     cardId = cardId || await getCardId();
     return axios.get(`${endpoint}/protected/card/${cardId}/accountmovement`, {      
         params: {
@@ -86,9 +86,10 @@ const getTransactions = async (cardId = null) => {
     })
     .then((res) => res.data.data.movementList)
     .catch((err) => {
-        throw new Error('Failed to retrieve transactions', { cause: err });
+        throw Error('Failed to retrieve transactions', { cause: err });
     });
 }
+
 
 /**
 * Transforms an array of transactions into a CSV string.
@@ -97,7 +98,7 @@ const getTransactions = async (cardId = null) => {
 * @throws {Error} If the transactions array is empty or not provided.
 */
 const transformTransactions = (transactions) => {
-    if (!transactions) { return new Error('Transactions not found'); }
+    if (!transactions) { return Error('Transactions not found'); }
     const headers = Object.keys(transactions[0]);
     const body = transactions.reduce((acc, transaction) => {
         const values = headers.map(header => {
@@ -119,7 +120,7 @@ const transformTransactions = (transactions) => {
 * @throws {Error} - If transactions is not found.
 */
 const saveTransactions = (transactions, csv = true, folder = 'transactions') => {
-    if (!transactions) { return new Error('Transactions not found'); }
+    if (!transactions) { return Error('Transactions not found'); }
     if (!fs.existsSync(folder)) { fs.mkdirSync(folder); }
     const date = new Date();
     const timestamp = `${date.getFullYear()}-${(`0` + parseInt(date.getMonth()+1)).slice(-2)}-${(`0` + date.getDate()).slice(-2)}T${(`0` + date.getHours()).slice(-2)}-${(`0` + date.getMinutes()).slice(-2)}`;
