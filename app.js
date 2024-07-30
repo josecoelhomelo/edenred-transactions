@@ -12,10 +12,10 @@ let cookie, token;
 * @returns {Promise<boolean>} - A promise that resolves to true if the login is successful.
 * @throws {Error} - If the required credentials are missing or if the login fails.
 */
-const login = async (params) => {
+const login = (params) => new Promise((resolve, reject) => {
     endpoint = params.endpoint || endpoint;
-    if (!params.email || !params.password) { throw new Error('Credentials are required'); }
-    return axios.post(`${endpoint}/authenticate/default`, {
+    if (!params.email || !params.password) { return reject(Error('Credentials are required')); }
+    axios.post(`${endpoint}/authenticate/default`, {
         userId: params.email,
         password: params.password,
     }, {        
@@ -31,22 +31,22 @@ const login = async (params) => {
     .then((res) => {
         cookie = res.headers['set-cookie'];
         token = res.data.data.token;
-        if (!cookie || !token) { throw new Error('Login failed', { cause: res }); }
-        return true;
+        if (!cookie || !token) { return reject(Error('Login failed', { cause: res })); }
+        resolve(true);
     })
     .catch((err) => {
-        throw new Error('Login failed', { cause: err });
+        reject(Error('Login failed', { cause: err }));
     });
-}
+});
 
 /**
 * Retrieves the identification of the first card in user's account.
 * @returns {Promise<string>} A promise that resolves to the card identification.
 * @throws {Error} If login is required or if failed to retrieve card identification.
 */
-const getCardId = async () => {
-    if (!cookie || !token) { throw new Error('Login required'); }
-    return axios.get(`${endpoint}/protected/card/list`, {      
+const getCardId = () => new Promise((resolve, reject) => {
+    if (!cookie || !token) { reject(Error('Login required')); }
+    axios.get(`${endpoint}/protected/card/list`, {      
         params: {
             appVersion: '1.0',
             appType: 'PORTAL',
@@ -57,11 +57,9 @@ const getCardId = async () => {
             'Authorization': token
         }
     })
-    .then((res) => res.data.data[0].id)
-    .catch((err) => {
-        throw new Error('Failed to retrieve card identification', { cause: err })
-    });
-}
+    .then((res) => resolve(res.data.data[0].id))
+    .catch((err) => reject(Error('Failed to retrieve card identification', { cause: err })));
+});
 
 /**
 * Retrieves transactions for a specific card.
