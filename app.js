@@ -97,7 +97,7 @@ const getTransactions = async (cardId = null) => {
 * @throws {Error} If the transactions array is empty or not provided.
 */
 const transformTransactions = (transactions) => {
-    if (!transactions) { throw new Error('Transactions not found'); }
+    if (!transactions) { return new Error('Transactions not found'); }
     const headers = Object.keys(transactions[0]);
     const body = transactions.reduce((acc, transaction) => {
         const values = headers.map(header => {
@@ -119,7 +119,7 @@ const transformTransactions = (transactions) => {
 * @throws {Error} - If transactions is not found.
 */
 const saveTransactions = (transactions, csv = true, folder = 'transactions') => {
-    if (!transactions) { throw new Error('Transactions not found'); }
+    if (!transactions) { return new Error('Transactions not found'); }
     if (!fs.existsSync(folder)) { fs.mkdirSync(folder); }
     const date = new Date();
     const timestamp = `${date.getFullYear()}-${(`0` + parseInt(date.getMonth()+1)).slice(-2)}-${(`0` + date.getDate()).slice(-2)}T${(`0` + date.getHours()).slice(-2)}-${(`0` + date.getMinutes()).slice(-2)}`;
