@@ -7,7 +7,7 @@ Install the package using npm:
 npm install edenred-transactions
 ```
 
-After installed, import it into your project;
+After installed, import it into your project:
 ```js
 import edenred from 'edenred-transactions';
 ```
