@@ -15,7 +15,7 @@ let token;
 */
 const login = async (params) => {
     endpoint = params.endpoint || endpoint;
-    if (!params.email || !params.password) { return reject(Error('Credentials are required')); }
+    if (!params.email || !params.password) { return Error('Credentials are required'); }
     try {
         const loginData = await axios.post(`${endpoint}/authenticate/default`, {
             userId: params.email,
