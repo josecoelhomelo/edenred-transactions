@@ -43,9 +43,10 @@ edenred.login({
     password: 'YourPassword123456'
 });
 ```
+In order to validate the login process, the app will prompt the user to enter the 2FA code that is sent to their e-mail. This function returns the authentication token for later use, if needed.
 
 ### getTransactions
-Retrieves transactions for a specific card. If no card identification is provided, it will attempt to retrieve one from the first card in user's account, by using the `getCardId` function.
+Retrieves transactions for a specific card. If no card identification is provided, the app will attempt to retrieve one from the first card in the user's account.
 ```js
 edenred.getTransactions('123456');
 ```

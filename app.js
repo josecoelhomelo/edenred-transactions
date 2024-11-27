@@ -1,7 +1,8 @@
-import fs from 'fs'
+import fs from 'fs';
+import readline from 'readline';
 import axios from 'axios';
-let endpoint = 'https://www.myedenred.pt/edenred-customer/api';
-let cookie, token;
+let endpoint = 'https://www.myedenred.pt/edenred-customer/v2';
+let token;
 
 /**
 * Logs in the user with the provided credentials.
@@ -12,32 +13,75 @@ let cookie, token;
 * @returns {Promise<boolean>} - A promise that resolves to true if the login is successful.
 * @throws {Error} - If the required credentials are missing or if the login fails.
 */
-const login = (params) => new Promise((resolve, reject) => {
+const login = async (params) => {
     endpoint = params.endpoint || endpoint;
     if (!params.email || !params.password) { return reject(Error('Credentials are required')); }
-    axios.post(`${endpoint}/authenticate/default`, {
+    try {
+        const loginData = await axios.post(`${endpoint}/authenticate/default`, {
+            userId: params.email,
+            password: params.password,
+        }, {        
+            params: {
+                appVersion: '1.0',
+                appType: 'PORTAL',
+                channel: 'WEB'
+            },
+            headers: { 'Content-Type': 'application/json' }
+        });
+        params.challengeId = loginData.data.data.challengeId;
+        params.authCode = await requestAuthCode();
+        token = await solveChallenge(params);
+        return token;
+    } catch (err) {
+        throw Error('Login failed', { cause: err });
+    }
+}
+
+/**
+* Prompts the user to enter the authentication code sent to their email.
+* @returns {Promise<string>} A promise that resolves with the entered code.
+* @throws {Error} If no code is entered.
+*/
+const requestAuthCode = () => new Promise((resolve, reject) => {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+    rl.question('Enter the code that was sent to your e-mail: ', (code) => {
+        rl.close();
+        if (!code) { reject(Error('Code is required')); }
+        resolve(code);
+    });
+});
+
+/**
+* Solves the two-factor authentication challenge.
+* @param {Object} params - The parameters required to solve the challenge.
+* @param {string} params.email - The user's email.
+* @param {string} params.password - The user's password.
+* @param {string} params.challengeId - The ID of the authentication challenge.
+* @param {string} params.authCode - The authentication code sent to the user's email.
+* @returns {Promise<string>} A promise that resolves to the authentication token.
+* @throws {Error} If the 2FA process fails.
+*/
+const solveChallenge = (params) => new Promise((resolve, reject) => {
+    axios.post(`${endpoint}/authenticate/default/challenge`, {
         userId: params.email,
         password: params.password,
-    }, {        
+        authenticationMfaProcessId: params.challengeId,
+        token: params.authCode
+    }, {      
         params: {
             appVersion: '1.0',
             appType: 'PORTAL',
             channel: 'WEB'
         },
-        headers: {
-            'Content-Type': 'application/json'
-        }
+        headers: { 'Authorization': params.authCode }
     })
-    .then((res) => {
-        cookie = res.headers['set-cookie'];
-        token = res.data.data.token;
-        if (!cookie || !token) { return reject(Error('Login failed', { cause: res })); }
-        resolve(true);
-    })
-    .catch((err) => {
-        reject(Error('Login failed', { cause: err }));
-    });
+        .then((res) => resolve(res.data.data.token))
+        .catch((err) => reject(Error('2FA process failed', { cause: err })));
 });
+
 
 /**
 * Retrieves the identification of the first card in user's account.
@@ -45,20 +89,17 @@ const login = (params) => new Promise((resolve, reject) => {
 * @throws {Error} If login is required or if failed to retrieve card identification.
 */
 const getCardId = () => new Promise((resolve, reject) => {
-    if (!cookie || !token) { reject(Error('Login required')); }
+    if (!token) { reject(Error('Login required')); }
     axios.get(`${endpoint}/protected/card/list`, {      
         params: {
             appVersion: '1.0',
             appType: 'PORTAL',
             channel: 'WEB'
         },
-        headers: {
-            'Cookie': cookie,
-            'Authorization': token
-        }
+        headers: { 'Authorization': token }
     })
-    .then((res) => resolve(res.data.data[0].id))
-    .catch((err) => reject(Error('Failed to retrieve card identification', { cause: err })));
+        .then((res) => resolve(res.data.data[0].id))
+        .catch((err) => reject(Error('Failed to retrieve card identification', { cause: err })));
 });
 
 /**
@@ -69,7 +110,7 @@ const getCardId = () => new Promise((resolve, reject) => {
 * @throws {Error} - If login is required or if there is an error retrieving the transactions
 */
 const getTransactions = async (cardId = null) => {
-    if (!cookie || !token) { throw Error('Login required'); }
+    if (!token) { throw Error('Login required'); }
     cardId = cardId || await getCardId();
     return axios.get(`${endpoint}/protected/card/${cardId}/accountmovement`, {      
         params: {
@@ -77,15 +118,10 @@ const getTransactions = async (cardId = null) => {
             appType: 'PORTAL',
             channel: 'WEB'
         },
-        headers: {
-            'Cookie': cookie,
-            'Authorization': token
-        }
+        headers: { 'Authorization': token }
     })
-    .then((res) => res.data.data.movementList)
-    .catch((err) => {
-        throw Error('Failed to retrieve transactions', { cause: err });
-    });
+        .then((res) => res.data.data.movementList)
+        .catch((err) => { throw Error('Failed to retrieve transactions', { cause: err }) });
 }
 
 
