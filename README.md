@@ -19,7 +19,7 @@ Saving transactions to a CSV file:
 import edenred from 'edenred-transactions';
 try {
     await edenred.login({
-        email: 'your-email@provider.com',
+        user: 'your-email@provider.com',
         password: 'YourPassword123456'
     });
     const transactions = await edenred.getTransactions(); 
@@ -39,7 +39,7 @@ Logs in with the provided credentials, which are passed by an object consisted o
 ```js
 edenred.login({
     endpoint: 'https://www.myedenred.pt/edenred-customer/api',
-    email: 'your-email@provider.com',
+    user: 'your-email@provider.com',
     password: 'YourPassword123456'
 });
 ```
