@@ -8,17 +8,18 @@ let token;
 * Logs in the user with the provided credentials.
 * @param {Object} params - The login parameters.
 * @param {string} params.endpoint - The login endpoint. If not provided, the default endpoint will be used.
-* @param {string} params.email - The user's email.
+* @param {string} params.user - The user's email or ID.
 * @param {string} params.password - The user's password.
 * @returns {Promise<boolean>} - A promise that resolves to true if the login is successful.
 * @throws {Error} - If the required credentials are missing or if the login fails.
 */
 const login = async (params) => {
     endpoint = params.endpoint || endpoint;
-    if (!params.email || !params.password) { return Error('Credentials are required'); }
+    const type = params.type || 'default';
+    if (!params.user || !params.password) { return Error('Credentials are required'); }
     try {
-        const loginData = await axios.post(`${endpoint}/authenticate/default`, {
-            userId: params.email,
+        const loginData = await axios.post(`${endpoint}/authenticate/${type}`, {
+            userId: params.user,
             password: params.password,
         }, {        
             params: {
@@ -28,6 +29,11 @@ const login = async (params) => {
             },
             headers: { 'Content-Type': 'application/json' }
         });
+        if (type == 'pin') {
+            if (!loginData.data.data.token) { throw Error('Token not found'); }
+            token = loginData.data.data.token;
+            return token;
+        }
         params.challengeId = loginData.data.data.challengeId;
         params.authCode = await requestAuthCode();
         token = await solveChallenge(params);
@@ -57,7 +63,7 @@ const requestAuthCode = () => new Promise((resolve, reject) => {
 /**
 * Solves the two-factor authentication challenge.
 * @param {Object} params - The parameters required to solve the challenge.
-* @param {string} params.email - The user's email.
+* @param {string} params.user - The user's email or ID.
 * @param {string} params.password - The user's password.
 * @param {string} params.challengeId - The ID of the authentication challenge.
 * @param {string} params.authCode - The authentication code sent to the user's email.
@@ -66,7 +72,7 @@ const requestAuthCode = () => new Promise((resolve, reject) => {
 */
 const solveChallenge = (params) => new Promise((resolve, reject) => {
     axios.post(`${endpoint}/authenticate/default/challenge`, {
-        userId: params.email,
+        userId: params.user,
         password: params.password,
         authenticationMfaProcessId: params.challengeId,
         token: params.authCode
