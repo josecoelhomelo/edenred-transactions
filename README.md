@@ -7,14 +7,13 @@ Install the package using npm:
 npm install edenred-transactions
 ```
 
-After installed, import it into your project:
+After installing, import it into your project:
 ```js
 import edenred from 'edenred-transactions';
 ```
 
 # Example
 Saving transactions to a CSV file:
-
 ```js
 import edenred from 'edenred-transactions';
 try {
@@ -32,10 +31,7 @@ try {
 # Methods
 
 ### login
-Logs in with the provided credentials, which are passed by an object consisted of:
-- Endpoint (optional; defaults to Portuguese endpoint)
-- E-mail address
-- Password
+Logs in with the provided credentials.
 ```js
 edenred.login({
     endpoint: 'https://www.myedenred.pt/edenred-customer/api',
@@ -43,6 +39,13 @@ edenred.login({
     password: 'YourPassword123456'
 });
 ```
+
+| Property | Definition |
+| -------- | ---------- |
+| endpoint | Optional; defaults to the Portuguese endpoint |
+| user | The user name or e-mail address |
+| password | The user password |
+
 In order to validate the login process, the app will prompt the user to enter the 2FA code that is sent to their e-mail. This function returns the authentication token for later use, if needed.
 
 ### getTransactions
