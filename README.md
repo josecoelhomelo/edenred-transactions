@@ -51,14 +51,16 @@ edenred.login({
 | Property | Definition |
 | -------- | ---------- |
 | `endpoint` | Optional; defaults to the Portuguese endpoint |
-| `user` | The user name or e-mail address |
-| `password` | The user password |
+| `user` | The user name, e-mail address or hash |
+| `password` | The user password or PIN |
+| `type` | Optional; defaults to `default` and can be set to `pin` |
 
-In order to validate the login process, the app will prompt the user to enter the 2FA code that is sent to their e-mail. This function returns the authentication token for later use, if needed.
+By using the default authentication, and in order to validate the login process, the module will prompt the user to enter the 2FA code that is sent to their e-mail. This function returns the authentication token for later use, if needed.\
+To bypass the 2FA prompt, you need specific user hash and PIN code, which you can retrieve while logging in through the mobile app. This involves intercepting traffic with a tool like [HTTP Toolkit](https://httptoolkit.com) or [Burp Suite](https://portswigger.net/burp).
 
 ### `getTransactions`
 
-Retrieves transactions for a specific card. If no card identification is provided, the app will attempt to retrieve one from the first card in the user's account.
+Retrieves transactions for a specific card. If no card identification is provided, the module will attempt to retrieve one from the first card in the user's account.
 
 ```js
 edenred.getTransactions('123456');
