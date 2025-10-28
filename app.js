@@ -2,7 +2,7 @@ import fs from 'fs';
 import readline from 'readline';
 import axios from 'axios';
 let endpoint = 'https://www.myedenred.pt/edenred-customer/v2';
-let token;
+let token = null;
 
 /**
  * Logs in the user with the provided credentials.
@@ -16,7 +16,7 @@ let token;
 const login = async (params) => {
     endpoint = params.endpoint || endpoint;
     const type = params.type || 'default';
-    if (!params.user || !params.password) { throw Error('Credentials are required'); }
+    if (!params.user || !params.password) { throw Error('Login failed', { cause: 'Credentials are required' }); }
     try {
         const loginData = await axios.post(`${endpoint}/authenticate/${type}`, {
             userId: params.user,
@@ -30,7 +30,7 @@ const login = async (params) => {
             headers: { 'Content-Type': 'application/json' }
         });
         if (type == 'pin') {
-            if (!loginData.data.data.token) { throw Error('Token not found'); }
+            if (!loginData.data.data.token) { throw Error('Login failed', { cause: 'Token not found' }); }
             token = loginData.data.data.token;
             return token;
         }
@@ -85,7 +85,7 @@ const solveChallenge = (params) => new Promise((resolve, reject) => {
         headers: { 'Authorization': params.authCode }
     })
         .then((res) => resolve(res.data.data.token))
-        .catch((err) => reject(Error('2FA process failed', { cause: err })));
+        .catch((err) => reject(Error('2FA process failed', { cause: JSON.stringify(err.response.data) })));
 });
 
 
@@ -95,7 +95,7 @@ const solveChallenge = (params) => new Promise((resolve, reject) => {
  * @throws {Error} If login is required or if failed to retrieve card identification.
  */
 const getCardId = () => new Promise((resolve, reject) => {
-    if (!token) { reject(Error('Login required')); }
+    if (!token) { reject(Error('Failed to retrieve card identification', { cause: 'Token missing' })); }
     axios.get(`${endpoint}/protected/card/list`, {      
         params: {
             appVersion: '1.0',
@@ -105,7 +105,7 @@ const getCardId = () => new Promise((resolve, reject) => {
         headers: { 'Authorization': token }
     })
         .then((res) => resolve(res.data.data[0].id))
-        .catch((err) => reject(Error('Failed to retrieve card identification', { cause: err })));
+        .catch((err) => reject(Error('Failed to retrieve card identification', { cause: JSON.stringify(err.response.data) })));
 });
 
 /**
@@ -116,7 +116,7 @@ const getCardId = () => new Promise((resolve, reject) => {
  * @throws {Error} - If login is required or if there is an error retrieving the transactions
  */
 const getTransactions = async (cardId = null) => {
-    if (!token) { throw Error('Login required'); }
+    if (!token) { reject(Error('Failed to retrieve card identification', { cause: 'Token missing' })); }
     cardId = cardId || await getCardId();
     return axios.get(`${endpoint}/protected/card/${cardId}/accountmovement`, {      
         params: {
@@ -127,7 +127,7 @@ const getTransactions = async (cardId = null) => {
         headers: { 'Authorization': token }
     })
         .then((res) => res.data.data.movementList)
-        .catch((err) => { throw Error('Failed to retrieve transactions', { cause: err }) });
+        .catch((err) => { throw Error('Failed to retrieve transactions', { cause: JSON.stringify(err.response.data) }) });
 }
 
 
