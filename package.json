@@ -21,7 +21,7 @@
         "fetch",
         "transactions"
     ],
-    "author": "José Melo",
+    "author": "José Coelho Melo",
     "license": "MIT",
     "bugs": {
         "url": "https://github.com/josecoelhomelo/edenred-transactions/issues"
