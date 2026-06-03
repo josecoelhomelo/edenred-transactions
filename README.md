@@ -68,9 +68,7 @@ edenred.getTransactions('123456');
 
 ### `saveTransactions`
 
-Saves the transactions to a file, either in CSV or JSON format.\
-Use the second parameter in boolean to indicate whether to save in CSV format, which defaults to `true`.\
-The third parameter indicates the folder where the file will be saved. Default is `transactions`.
+Saves the transactions to a file, either in CSV or JSON format. Use the second parameter in boolean to indicate whether to save in CSV format, which defaults to `true`. The third parameter indicates the folder where the file will be saved. Default is `transactions`.
 
 ```js
 edenred.saveTransactions(transactionsArray, false, 'some-folder');

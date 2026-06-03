@@ -116,7 +116,7 @@ const getCardId = () => new Promise((resolve, reject) => {
  * @throws {Error} - If login is required or if there is an error retrieving the transactions
  */
 const getTransactions = async (cardId = null) => {
-    if (!token) { reject(Error('Failed to retrieve card identification', { cause: 'Token missing' })); }
+    if (!token) { reject(Error('Failed to retrieve transactions', { cause: 'Token missing' })); }
     cardId = cardId || await getCardId();
     return axios.get(`${endpoint}/protected/card/${cardId}/accountmovement`, {      
         params: {
